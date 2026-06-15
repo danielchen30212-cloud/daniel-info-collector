@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "init-db": "node db-init.js"
+    "dev": "node server.js"
   },
   "keywords": ["information", "collector", "scraper"],
   "author": "Daniel",
