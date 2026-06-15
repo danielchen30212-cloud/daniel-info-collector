@@ -54,22 +54,72 @@ const Settings = mongoose.model('Settings', settingsSchema);
 
 // ===== 爬蟲配置 =====
 const sources = {
-  kpmg: { name: 'KPMG', url: 'https://kpmg.com/insights', method: 'rss' },
-  pwc: { name: 'PwC', url: 'https://www.pwc.com/gx/en/news.html', method: 'scrape' },
-  ey: { name: 'EY', url: 'https://www.ey.com/en/gl/issues', method: 'scrape' },
-  deloitte: { name: 'Deloitte', url: 'https://www2.deloitte.com/insights/us/en.html', method: 'scrape' },
-  bbc: { name: 'BBC', url: 'https://www.bbc.com/news', method: 'rss' },
-  cnn: { name: 'CNN', url: 'https://www.cnn.com', method: 'scrape' },
-  cgtn: { name: 'CGTN', url: 'https://news.cgtn.com', method: 'scrape' },
-  business: { name: 'Business Insider', url: 'https://www.businessinsider.com/tech', method: 'scrape' },
-  times: { name: 'Times', url: 'https://www.thetimes.com/news', method: 'scrape' },
-  bloomberg: { name: 'Bloomberg', url: 'https://www.bloomberg.com/technology', method: 'scrape' }
+  kpmg: {
+    name: 'KPMG',
+    url: 'https://kpmg.com/insights',
+    method: 'rss'
+  },
+  pwc: {
+    name: 'PwC',
+    url: 'https://www.pwc.com/gx/en/news.html',
+    method: 'scrape'
+  },
+  ey: {
+    name: 'EY',
+    url: 'https://www.ey.com/en/gl/issues',
+    method: 'scrape'
+  },
+  deloitte: {
+    name: 'Deloitte',
+    url: 'https://www2.deloitte.com/insights/us/en.html',
+    method: 'scrape'
+  },
+  bbc: {
+    name: 'BBC',
+    url: 'https://www.bbc.com/news',
+    method: 'rss'
+  },
+  cnn: {
+    name: 'CNN',
+    url: 'https://www.cnn.com',
+    method: 'scrape'
+  },
+  cgtn: {
+    name: 'CGTN',
+    url: 'https://news.cgtn.com',
+    method: 'scrape'
+  },
+  business: {
+    name: 'Business Insider',
+    url: 'https://www.businessinsider.com/tech',
+    method: 'scrape'
+  },
+  times: {
+    name: 'Times',
+    url: 'https://www.thetimes.com/news',
+    method: 'scrape'
+  },
+  bloomberg: {
+    name: 'Bloomberg',
+    url: 'https://www.bloomberg.com/technology',
+    method: 'scrape'
+  }
 };
 
 // 關鍵詞列表
 const KEYWORDS_TO_MONITOR = [
-  'Taiwan', 'China', 'Technology', 'AI', 'Artificial Intelligence', 'Supply Chain', 'Supply',
-  '台灣', '中國', '科技', '人工智能', '供應鏈'
+  'Taiwan',
+  'China',
+  'Technology',
+  'AI',
+  'Artificial Intelligence',
+  'Supply Chain',
+  'Supply',
+  '台灣',
+  '中國',
+  '科技',
+  '人工智能',
+  '供應鏈'
 ];
 
 const COUNTRIES = ['Taiwan', 'China', 'US', 'USA', '台灣', '中國', '美國'];
@@ -80,11 +130,15 @@ class Scraper {
     try {
       const response = await axios.get(sourceConfig.url, {
         timeout: 10000,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        }
       });
 
       const articles = [];
       const $ = cheerio.load(response.data);
+
+      // 根據來源選擇合適的選擇器
       const selectors = this.getSelectors(sourceId);
 
       $(selectors.article).each((idx, el) => {
@@ -123,12 +177,43 @@ class Scraper {
 
   static getSelectors(sourceId) {
     const selectorMap = {
-      kpmg: { article: 'article.insight-card', title: 'h3', excerpt: '.insight-summary', link: 'a', date: '.publish-date' },
-      pwc: { article: '.insight-item', title: '.insight-title', excerpt: '.insight-excerpt', link: 'a', date: '.date' },
-      bbc: { article: 'article', title: 'h2, h3', excerpt: 'p', link: 'a', date: 'time' },
-      cnn: { article: '.card', title: 'span.headline__text', excerpt: 'span.headline__description', link: 'a', date: 'span.container__headline-date' },
-      default: { article: 'article, .article, .news-item', title: 'h1, h2, h3, .title', excerpt: 'p, .excerpt, .summary', link: 'a', date: '.date, time, .published' }
+      kpmg: {
+        article: 'article.insight-card',
+        title: 'h3',
+        excerpt: '.insight-summary',
+        link: 'a',
+        date: '.publish-date'
+      },
+      pwc: {
+        article: '.insight-item',
+        title: '.insight-title',
+        excerpt: '.insight-excerpt',
+        link: 'a',
+        date: '.date'
+      },
+      bbc: {
+        article: 'article',
+        title: 'h2, h3',
+        excerpt: 'p',
+        link: 'a',
+        date: 'time'
+      },
+      cnn: {
+        article: '.card',
+        title: 'span.headline__text',
+        excerpt: 'span.headline__description',
+        link: 'a',
+        date: 'span.container__headline-date'
+      },
+      default: {
+        article: 'article, .article, .news-item',
+        title: 'h1, h2, h3, .title',
+        excerpt: 'p, .excerpt, .summary',
+        link: 'a',
+        date: '.date, time, .published'
+      }
     };
+
     return selectorMap[sourceId] || selectorMap.default;
   }
 
@@ -139,7 +224,7 @@ class Scraper {
         found.push(keyword);
       }
     });
-    return [...new Set(found)];
+    return [...new Set(found)]; // 去重
   }
 
   static detectCountry(text) {
@@ -152,7 +237,9 @@ class Scraper {
   }
 
   static parseDate(dateStr) {
+    // 簡單的日期解析邏輯
     if (!dateStr) return new Date();
+    
     const now = new Date();
     if (dateStr.includes('hour') || dateStr.includes('小時')) {
       const hours = parseInt(dateStr) || 1;
@@ -162,6 +249,7 @@ class Scraper {
       const days = parseInt(dateStr) || 1;
       return new Date(now - days * 24 * 60 * 60 * 1000);
     }
+    
     try {
       return new Date(dateStr);
     } catch {
@@ -177,31 +265,54 @@ class Scraper {
 }
 
 // ===== API 路由 =====
+
+// 獲取文章列表
 app.get('/api/articles', async (req, res) => {
   try {
     const { sources, keywords, dateRange = 'week', page = 1, limit = 20 } = req.query;
+
     let query = {};
+
+    // 篩選來源
     if (sources && sources.length > 0) {
       const sourceList = Array.isArray(sources) ? sources : [sources];
       query.sourceId = { $in: sourceList };
     }
+
+    // 篩選關鍵詞
     if (keywords && keywords.length > 0) {
       const keywordList = Array.isArray(keywords) ? keywords : [keywords];
       query.keywords = { $in: keywordList };
     }
+
+    // 篩選日期範圍
     const now = new Date();
     let dateFilter = {};
     switch (dateRange) {
-      case 'day': dateFilter = { $gte: new Date(now - 24 * 60 * 60 * 1000) }; break;
-      case 'week': dateFilter = { $gte: new Date(now - 7 * 24 * 60 * 60 * 1000) }; break;
-      case 'month': dateFilter = { $gte: new Date(now - 30 * 24 * 60 * 60 * 1000) }; break;
+      case 'day':
+        dateFilter = { $gte: new Date(now - 24 * 60 * 60 * 1000) };
+        break;
+      case 'week':
+        dateFilter = { $gte: new Date(now - 7 * 24 * 60 * 60 * 1000) };
+        break;
+      case 'month':
+        dateFilter = { $gte: new Date(now - 30 * 24 * 60 * 60 * 1000) };
+        break;
     }
     if (Object.keys(dateFilter).length > 0) {
       query.date = dateFilter;
     }
+
+    // 分頁
     const skip = (page - 1) * limit;
-    const articles = await Article.find(query).sort({ date: -1 }).skip(skip).limit(parseInt(limit));
+
+    const articles = await Article.find(query)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
     const total = await Article.countDocuments(query);
+
     res.json({
       articles,
       pagination: {
@@ -216,6 +327,7 @@ app.get('/api/articles', async (req, res) => {
   }
 });
 
+// 獲取單篇文章
 app.get('/api/articles/:id', async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
@@ -228,6 +340,7 @@ app.get('/api/articles/:id', async (req, res) => {
   }
 });
 
+// 保存文章
 app.post('/api/articles/:id/save', async (req, res) => {
   try {
     const article = await Article.findByIdAndUpdate(
@@ -241,12 +354,14 @@ app.post('/api/articles/:id/save', async (req, res) => {
   }
 });
 
+// 獲取統計信息
 app.get('/api/stats', async (req, res) => {
   try {
     const total = await Article.countDocuments();
     const sources = await Article.distinct('sourceId');
     const keywords = await Article.distinct('keywords');
     const lastUpdate = await Article.findOne().sort({ createdAt: -1 });
+
     res.json({
       totalArticles: total,
       sources: sources.length,
@@ -258,6 +373,7 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+// 手動觸發更新
 app.post('/api/update', async (req, res) => {
   try {
     await updateAllSources();
@@ -267,16 +383,28 @@ app.post('/api/update', async (req, res) => {
   }
 });
 
+// 健康檢查
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date() });
+});
+
 // ===== 定時更新任務 =====
+
 async function updateAllSources() {
   console.log('[Cron] Starting update cycle at', new Date().toISOString());
+  
   for (const [sourceId, config] of Object.entries(sources)) {
     try {
       console.log(`[Cron] Fetching from ${sourceId}...`);
       const articles = await Scraper.fetchArticles(sourceId, config);
+      
+      // 只保存包含目標關鍵詞的文章
       const filtered = articles.filter(
-        a => a.keywords.length > 0 || KEYWORDS_TO_MONITOR.some(k => a.title.includes(k))
+        a => a.keywords.length > 0 || 
+             KEYWORDS_TO_MONITOR.some(k => a.title.includes(k))
       );
+
+      // 批量插入（避免重複）
       for (const article of filtered) {
         await Article.updateOne(
           { url: article.url },
@@ -284,16 +412,23 @@ async function updateAllSources() {
           { upsert: true }
         );
       }
+
       console.log(`[Cron] ${filtered.length} articles saved from ${sourceId}`);
     } catch (err) {
       console.error(`[Cron] Error updating ${sourceId}:`, err.message);
     }
   }
+
   console.log('[Cron] Update cycle completed at', new Date().toISOString());
 }
 
+// 每週一 08:00 執行
+// cron.schedule('0 8 * * 1', updateAllSources);
+
+// 為了測試，每小時執行一次
 cron.schedule('0 * * * *', updateAllSources);
 
+// 啟動時執行一次
 if (process.env.NODE_ENV !== 'testing') {
   // updateAllSources();
 }
